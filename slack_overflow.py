@@ -6,8 +6,12 @@ from flask import request, jsonify, abort
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 import json
+
+
 from question_tagger import QuestionTagger
 import torch
+import numpy as np
+from transformers import BertTokenizerFast as BertTokenizer, BertModel, AdamW, get_linear_schedule_with_warmup
 
 client = WebClient(token=os.environ.get("xoxb-2303935478769-2297880316244-vKtkyqSkDMB6Ek6qeIGEJWtl"))
 logger = logging.getLogger(__name__)
@@ -49,7 +53,8 @@ def recommend():
 	if text == None or text == '':
 		return "Please enter a question."
 
-	channel = model.predict([text])[0]
+	#channel = model.predict([text])[0]
+	channel = predict(text)
 	channel_id = findChannelId(channel)
 	val = { "question" : text, "channel_id" : channel_id}
 
@@ -87,6 +92,24 @@ def recommend():
 				}
 			]
 		})
+
+def predict(text):
+	test_comment = text
+	tokenizer = BertTokenizer.from_pretrained(BERT_MODEL_NAME)
+	encoding = tokenizer.encode_plus(
+	  test_comment,
+	  add_special_tokens=True,
+	  max_length=128,
+	  return_token_type_ids=False,
+	  padding="max_length",
+	  return_attention_mask=True,
+	  return_tensors='pt',
+	)
+
+	_, test_prediction = bert(encoding["input_ids"], encoding["attention_mask"])
+	test_prediction = test_prediction.flatten().detach().numpy()
+	LABEL_COLUMNS = ['cloud', 'node', 'python']
+	return LABEL_COLUMNS[np.argmax(test_prediction)]
 
 def findChannelId(channel_name):
     try:
