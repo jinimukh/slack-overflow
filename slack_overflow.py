@@ -14,12 +14,18 @@ app = Flask(__name__)
 @app.route("/", methods=["POST"])
 def action():
 
-	action_id = request.form.get("type", None)
-
-	print(action_id)
+	payload = json.loads(request.form["payload"])
+	actions = payload["actions"][0]
+	action_id = actions["action_id"]
 
 	if action_id == "post":
-		value = json.loads(request.form.get("actions.value", None))
+
+		print(action_id)
+
+		value = json.loads(actions["value"])
+
+		print(value)
+
 		question = value["question"]
 		channel_id = value["channel_id"]
 
