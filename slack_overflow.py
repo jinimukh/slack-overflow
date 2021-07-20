@@ -26,15 +26,37 @@ def recommend():
 
     return jsonify({
 	        "blocks": [
+				{
+					"type": "section",
+			        "text": {
+				        "type": "mrkdwn",
+				        "text": "*"+text+"*"
+			        }
+				},
 		        {
 			        "type": "section",
 			        "text": {
 				        "type": "mrkdwn",
-				        "text": "I suggest your question, *"+text+"*, be posted in <#"+channel_id+"|"+channel+">."
+				        "text": "I suggest you post your question in <#"+channel_id+"|"+channel+">."
 			        }
-		        }
-	        ]
-        })
+		        },
+                {
+					"type": "actions",
+					"block_id": "actionblock789",
+					"elements": [
+						{
+							"type": "button",
+							"text": {
+								"type": "plain_text",
+								"text": "Post Question"
+							},
+							"style": "primary",
+							"value": "click_me_456"
+						}
+					]
+				}
+			]
+		})
 
 def findChannelId(channel_name):
     try:
