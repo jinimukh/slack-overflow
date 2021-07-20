@@ -6,10 +6,17 @@ from flask import request, jsonify, abort
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 import json
+from question_tagger import QuestionTagger
+import torch
 
 client = WebClient(token=os.environ.get("xoxb-2303935478769-2297880316244-vKtkyqSkDMB6Ek6qeIGEJWtl"))
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
+model = load("naivebayes.joblib")
+
+BERT_MODEL_NAME = 'bert-base-cased'
+bert = QuestionTagger(n_classes=3)
+bert.load_state_dict(torch.load("trained_model.pth"))
 
 @app.route("/", methods=["POST"])
 def action():
@@ -19,13 +26,7 @@ def action():
 	action_id = actions["action_id"]
 
 	if action_id == "post":
-
-		print(action_id)
-
 		value = json.loads(actions["value"])
-
-		print(value)
-
 		question = value["question"]
 		channel_id = value["channel_id"]
 
@@ -48,7 +49,6 @@ def recommend():
 	if text == None or text == '':
 		return "Please enter a question."
 
-	model = load("naivebayes.joblib")
 	channel = model.predict([text])[0]
 	channel_id = findChannelId(channel)
 	val = { "question" : text, "channel_id" : channel_id}
