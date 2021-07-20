@@ -16,7 +16,7 @@ def recommend():
 
     model = load("naivebayes.joblib")
     ret = model.predict([text])
-    return ret[0]
+    return '#' + ret[0]
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
