@@ -24,30 +24,30 @@ bert.load_state_dict(torch.load("trained_model.pth"))
 
 channel_public_ids = {"python": "C028ZTHBP33", "cloud": "C0286GGP3PH", "node": "C028ZTLBQL9"}
 
-@app.route("/", methods=["POST"])
+@app.route('/', methods=["POST"])
 def action():
 
-	# payload = json.loads(request.form["payload"])
-	# actions = payload["actions"][0]
-	# action_id = actions["action_id"]
+	try:
+		payload = json.loads(request.form["payload"])
+		print(payload)
+		actions = payload.get("actions")[0]
+		action_id = actions.get("action_id")
 
-	if 1==1:
 
-	# if action_id == "post":
-		# value = json.loads(actions["value"])
-		# question = value["question"]
-		# channel_id = value["channel_id"]
-		channel_id = "C028ZTHBP33"
+		if action_id == "post":
+			value = json.loads(actions["value"])
+			question = value["question"]
+			channel_id = value["channel_id"]
 
-		try:
-			# return client.chat_postMessage(
-			# 	channel=channel_id,
-			# 	# text="Hello there."
-			# )
-			print("REACHED HERE!")
 
-		except SlackApiError as e:
-			print(f"Error: {e}")
+			return client.chat_postMessage(
+				channel=channel_id,
+				text=question
+			)
+
+	except SlackApiError as e:
+		# print(f"Error: {e}")
+		raise e
 
 
 @app.route('/where', methods=['POST'])
@@ -98,7 +98,6 @@ def recommend():
 		})
 
 def predict(text):
-	# return "python"
 	test_comment = text
 	tokenizer = BertTokenizer.from_pretrained(BERT_MODEL_NAME)
 	encoding = tokenizer.encode_plus(
