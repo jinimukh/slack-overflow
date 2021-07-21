@@ -13,33 +13,38 @@ import torch
 import numpy as np
 from transformers import BertTokenizerFast as BertTokenizer, BertModel, AdamW, get_linear_schedule_with_warmup
 
-client = WebClient(token=os.environ.get("xoxb-2303935478769-2297880316244-vKtkyqSkDMB6Ek6qeIGEJWtl"))
+client = WebClient(token="xoxb-2303935478769-2297880316244-iN21SvlMFxM5LCTyzAtfqOIO")
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
-model = load("naivebayes.joblib")
+# model = load("naivebayes.joblib")
 
 BERT_MODEL_NAME = 'bert-base-cased'
 bert = QuestionTagger(n_classes=3)
 bert.load_state_dict(torch.load("trained_model.pth"))
 
+channel_public_ids = {"python": "C028ZTHBP33", "cloud": "C0286GGP3PH", "node": "C028ZTLBQL9"}
+
 @app.route("/", methods=["POST"])
 def action():
 
-	payload = json.loads(request.form["payload"])
-	actions = payload["actions"][0]
-	action_id = actions["action_id"]
+	# payload = json.loads(request.form["payload"])
+	# actions = payload["actions"][0]
+	# action_id = actions["action_id"]
 
-	if action_id == "post":
-		value = json.loads(actions["value"])
-		question = value["question"]
-		channel_id = value["channel_id"]
+	if 1==1:
+
+	# if action_id == "post":
+		# value = json.loads(actions["value"])
+		# question = value["question"]
+		# channel_id = value["channel_id"]
+		channel_id = "C028ZTHBP33"
 
 		try:
-			return client.chat_postMessage(
-				token = "xoxb-2303935478769-2297880316244-vKtkyqSkDMB6Ek6qeIGEJWtl",
-				channel=channel_id,
-				text=question
-			)
+			# return client.chat_postMessage(
+			# 	channel=channel_id,
+			# 	# text="Hello there."
+			# )
+			print("REACHED HERE!")
 
 		except SlackApiError as e:
 			print(f"Error: {e}")
@@ -53,9 +58,8 @@ def recommend():
 	if text == None or text == '':
 		return "Please enter a question."
 
-	#channel = model.predict([text])[0]
 	channel = predict(text)
-	channel_id = findChannelId(channel)
+	channel_id = channel_public_ids.get(channel)
 	val = { "question" : text, "channel_id" : channel_id}
 
 	return jsonify({
@@ -94,6 +98,7 @@ def recommend():
 		})
 
 def predict(text):
+	# return "python"
 	test_comment = text
 	tokenizer = BertTokenizer.from_pretrained(BERT_MODEL_NAME)
 	encoding = tokenizer.encode_plus(
@@ -111,16 +116,6 @@ def predict(text):
 	LABEL_COLUMNS = ['cloud', 'node', 'python']
 	return LABEL_COLUMNS[np.argmax(test_prediction)]
 
-def findChannelId(channel_name):
-    try:
-        # Call the conversations.list method using the WebClient
-        for result in client.conversations_list(token = "xoxb-2303935478769-2297880316244-vKtkyqSkDMB6Ek6qeIGEJWtl"):
-            for channel in result["channels"]:
-                if channel["name"] == channel_name:
-                    return channel["id"]
-
-    except SlackApiError as e:
-        print(f"Error: {e}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

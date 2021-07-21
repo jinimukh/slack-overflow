@@ -14,15 +14,6 @@ from pytorch_lightning.metrics.functional import accuracy, f1, auroc
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, multilabel_confusion_matrix
-
-import seaborn as sns
-from pylab import rcParams
-import matplotlib.pyplot as plt
-from matplotlib import rc
-
-
 
 RANDOM_SEED = 42
 pl.seed_everything(RANDOM_SEED)
