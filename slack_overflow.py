@@ -33,16 +33,30 @@ def action():
 		actions = payload.get("actions")[0]
 		action_id = actions.get("action_id")
 
-
 		if action_id == "post":
+			user = payload.get("user").get("username")
 			value = json.loads(actions["value"])
 			question = value["question"]
 			channel_id = value["channel_id"]
 
+			text = f"""New question from <@{user}>: 
 
+{question}
+			"""
 			return client.chat_postMessage(
 				channel=channel_id,
-				text=question
+				text=text
+			)
+
+		elif action_id == "post_anon":
+			value = json.loads(actions["value"])
+			question = value["question"]
+			channel_id = value["channel_id"]
+
+			text = question
+			return client.chat_postMessage(
+				channel=channel_id,
+				text=text
 			)
 
 	except SlackApiError as e:
@@ -91,6 +105,16 @@ def recommend():
 							"style": "primary",
 							"value": json.dumps(val),
 							"action_id": "post"
+						}, 
+						{
+							"type": "button",
+							"text": {
+								"type": "plain_text",
+								"text": "Post Anonymously"
+							},
+							"style": "primary",
+							"value": json.dumps(val),
+							"action_id": "post_anon"
 						}
 					]
 				}
