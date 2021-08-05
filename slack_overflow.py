@@ -13,7 +13,9 @@ import torch
 import numpy as np
 from transformers import BertTokenizerFast as BertTokenizer, BertModel, AdamW, get_linear_schedule_with_warmup
 
-client = WebClient(token="xoxb-2303935478769-2297880316244-iN21SvlMFxM5LCTyzAtfqOIO")
+SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
+
+client = WebClient(token=SLACK_TOKEN)
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
 # model = load("naivebayes.joblib")
@@ -43,10 +45,12 @@ def action():
 
 {question}
 			"""
-			return client.chat_postMessage(
+			client.chat_postMessage(
 				channel=channel_id,
 				text=text
 			)
+
+			return jsonify({})
 
 		elif action_id == "post_anon":
 			value = json.loads(actions["value"])
@@ -54,10 +58,12 @@ def action():
 			channel_id = value["channel_id"]
 
 			text = question
-			return client.chat_postMessage(
+			client.chat_postMessage(
 				channel=channel_id,
 				text=text
 			)
+
+			return jsonify({})
 
 	except SlackApiError as e:
 		# print(f"Error: {e}")
@@ -89,7 +95,7 @@ def recommend():
 					"type": "section",
 					"text": {
 						"type": "mrkdwn",
-						"text": "I suggest you post your question in <#"+channel_id+"|"+channel+">."
+						"text": ":slack: Post your question in <#"+channel_id+"|"+channel+"> :slack:."
 					}
 				},
 				{
